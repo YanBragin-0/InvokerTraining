@@ -1,0 +1,202 @@
+﻿@{
+    ViewData["Title"] = "Invoker Training";
+}
+
+<div style="position: absolute; top: 1rem; right: 1rem;">
+    <a href="/account/logout" class="btn btn-danger btn-sm">Logout</a>
+</div>
+
+<div class="text-center">
+    <h1 class="display-4" style="font-size: 2.5rem; color: #00d4ff; font-weight: bold";>Invoker Training</h1>
+    <hr/>
+
+    <div id="target-container" class="mb-4">
+        <h3 style="font-size: 2.5rem; color: #00d4ff; font-weight: bold";>Target:</h3>
+        <div id="target-spell" style="font-size: 2.5rem; color: #00d4ff; font-weight: bold;">
+            Press Start
+        </div>
+    </div>
+
+    <div id="spheres-container" class="d-flex justify-content-center gap-3 mb-4">
+        <div class="sphere-slot" id="slot0"><img class="sphere-image" src="" alt="Sphere" /></div>
+        <div class="sphere-slot" id="slot1"><img class="sphere-image" src="" alt="Sphere" /></div>
+        <div class="sphere-slot" id="slot2"><img class="sphere-image" src="" alt="Sphere" /></div>
+    </div>
+
+    <button id="startBtn" class="btn btn-success btn-lg">Start</button>
+
+    <div id="instructions" style="margin-top: 2rem; padding: 1.5rem; background-color: #1a1a1a; border: 2px solid #555; border-radius: 8px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h4 style="color: #00d4ff; margin-bottom: 1rem; font-weight: bold;">Combinations</h4>
+        <div style="text-align: left; font-size: 0.9rem; line-height: 1.6; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <span style="color: white;">Cold Snap:</span> <span style="color: #0088ff;">Q Q Q</span>
+            </div>
+            <div>
+                <span style="color: white;">Ghost Walk:</span> <span style="color: #0088ff;">Q Q</span><span style="color: #cc44ff;"> W</span>
+            </div>
+            <div>
+                <span style="color: white;">Ice Wall:</span> <span style="color: #0088ff;">Q Q</span><span style="color: #ff6600;"> E</span>
+            </div>
+            <div>
+                <span style="color: white;">EMP:</span> <span style="color: #cc44ff;">W W W</span>
+            </div>
+            <div>
+                <span style="color: white;">Tornado:</span> <span style="color: #cc44ff;">W W</span><span style="color: #0088ff;"> Q</span>
+            </div>
+            <div>
+                <span style="color: white;">Alacrity:</span> <span style="color: #cc44ff;">W W</span><span style="color: #ff6600;"> E </span>
+            </div>
+            <div>
+                <span style="color: white;">Sun Strike:</span> <span style="color: #ff6600;">E E E</span>
+            </div>
+            <div>
+                <span style="color: white;">Forge Spirit:</span> <span style="color: #ff6600;">E E</span><span style="color: #0088ff;"> Q</span>
+            </div>
+            <div>
+                <span style="color: white;">Meteor:</span> <span style="color: #ff6600;">E E</span><span style="color: #cc44ff;"> W</span>
+            </div>
+            <div>
+                <span style="color: white;">Deaf. Blast:</span> <span style="color: #ff6600;">E</span><span style="color: #cc44ff;"> W</span><span style="color: #0088ff;"> Q</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="message" class="mt-4" style="font-size: 1.2rem;"></div>
+
+    <div id="button-container" style="min-height: 50px; display: flex; align-items: center; justify-content: center;">
+        <div id="finish-screen" style="display: none; text-align: center;">
+            <h2 style="color: #00d4ff; font-size: 2rem; margin-bottom: 1rem;">Finish</h2>
+            <p style="font-size: 1.5rem; color: white; margin-bottom: 1rem;">Time: <span id="finish-time" style="color: #00ff00; font-weight: bold;">0.00</span> сек</p>
+            <button id="restartBtn" class="btn btn-success btn-lg">Try again</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    body{
+        background-color: #1b2224;
+    }
+    .sphere-slot {
+        width: 80px;
+        height: 80px;
+        border: 2px solid #555;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #222;
+        overflow: hidden;
+        transition: background-color 0.3s ease;
+    }
+
+    .sphere-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    #startBtn, #restartBtn {
+        display: inline-block;
+        margin: 0 auto;
+    }
+
+    #button-container {
+        width: 100%;
+        text-align: center;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/invoker")
+            .build();
+
+        let isGameActive = false;
+
+        connection.start().catch(err => console.error("Ошибка подключения: ", err));
+
+        connection.on("NextSpell", (spellName) => {
+            document.getElementById("target-spell").innerText = spellName;
+            document.getElementById("startBtn").style.display = "none";
+            isGameActive = true;
+        });
+
+        connection.on("UpdateVisualSpheres", (spheres) => {
+            const imageMap = {
+                'q': '/images/invoker_quas.png',
+                'w': '/images/invoker_wex.png',
+                'e': '/images/invoker_exort.png'
+            };
+
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById("slot" + i);
+                const img = slot.querySelector('.sphere-image');
+
+                if (spheres && spheres[i]) {
+                    const letter = spheres[i].toLowerCase();
+                    img.src = imageMap[letter] || '';
+                } else {
+                    img.src = '';
+                }
+            }
+        });
+
+        connection.on("ResultReceived", (isCorrect) => {
+            const msg = document.getElementById("message");
+            if (isCorrect) {
+                msg.innerText = "True";
+                msg.style.color = "lime";
+            } else {
+                msg.innerText = "Fail";
+                msg.style.color = "red";
+            }
+        });
+
+        connection.on("FinishGame", (time) => {
+            isGameActive = false;
+            document.getElementById("finish-screen").style.display = "block";
+            document.getElementById("startBtn").style.display = "none";
+            document.getElementById("message").innerText = "";
+            document.getElementById("finish-time").innerText = time.toFixed(2);
+        });
+
+        window.addEventListener("keydown", (event) => {
+            const keyCode = event.code;
+
+            if (!isGameActive) {
+                return;
+            }
+            let key = null;
+            if (keyCode === 'KeyQ') key = 'q';
+            else if (keyCode === 'KeyW') key = 'w';
+            else if (keyCode === 'KeyE') key = 'e';
+            else if (keyCode === 'KeyR') key = 'r';
+
+            if (key) {
+                connection.invoke("SendKey", key, document.getElementById("target-spell").innerText)
+                    .catch(err => console.error(err));
+            }
+        });
+
+        document.getElementById("startBtn").addEventListener("click", () => {
+            connection.invoke("StartGame");
+        });
+
+        document.getElementById("restartBtn").addEventListener("click", () => {
+            isGameActive = false;
+            document.getElementById("finish-screen").style.display = "none";
+            document.getElementById("startBtn").style.display = "block";
+            document.getElementById("target-spell").innerText = "Нажми \"Начать игру\"";
+            document.getElementById("message").innerText = "";
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById("slot" + i);
+                const img = slot.querySelector('.sphere-image');
+                img.src = "";
+            }
+        });
+    </script>
+}

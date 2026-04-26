@@ -1,0 +1,59 @@
+
+<form id="registerForm">
+    <div class="auth-container">
+    <h2>Invoker Game</h2>
+    
+    <div class="auth-tabs">
+        <a href="/Account/Login" class="tab-link tab-inactive">Вход</a>
+        <a href="/Account/Register" class="tab-link tab-active">Регистрация</a>
+    </div>
+
+    <div id="error-message" style="display:none;"></div>
+
+    <form id="registerForm">
+        <div class="input-group">
+            <label>Имя пользователя</label>
+            <input type="text" name="username" class="form-input" placeholder="YourName" required>
+        </div>
+        <div class="input-group">
+            <label>Пароль</label>
+            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+        </div>
+        <div class="input-group">
+            <label>Повторите пароль</label>
+            <input type="password" name="confirmPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit">Создать аккаунт</button>
+    </form>
+</div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('registerForm');
+        
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const payload = Object.fromEntries(formData.entries());
+                const response = await fetch('/api/auth/registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        EmailOrPhoneNumber: payload.username, 
+                        Password: payload.password,
+                        ConfirmPassword: payload.confirmPassword
+                    })
+                });
+                if (response.ok) {
+                    window.location.href = '/Home/Index';
+                } else {
+                    const errorText = await response.text();
+                    alert("Ошибка: " + errorText);
+                }
+            };
+        }
+    });
+</script>

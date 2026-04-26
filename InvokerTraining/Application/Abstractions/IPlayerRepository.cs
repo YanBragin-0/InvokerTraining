@@ -1,0 +1,12 @@
+﻿using InvokerTraining.Models.Entities;
+
+namespace InvokerTraining.Application.Abstractions
+{
+    public interface IPlayerRepository
+    {
+        Task<Player?> GetPlayerByPhoneOrEmailAsync(string phoneOrEmail);
+        Task<Player?> GetByIdAsync(Guid Id);
+        Task RegistrationAsync(Player newPlayer);
+        Task SavechangesAsync();
+    }
+}

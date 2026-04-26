@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "Вход в Invoker Academy";
+}
+
+<div class="auth-container">
+    <h2>Invoker Game</h2>
+    
+    <div class="auth-tabs">
+        <a href="/Account/Login" class="tab-link tab-active">Вход</a>
+        <a href="/Account/Register" class="tab-link tab-inactive">Регистрация</a>
+    </div>
+
+    <div id="error-message" style="display:none;"></div>
+
+    <form id="loginForm">
+        <div class="input-group">
+            <label>Имя пользователя</label>
+            <input type="text" id="username" class="form-input" placeholder="Ваш логин" required>
+        </div>
+        <div class="input-group">
+            <label>Пароль</label>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit">Войти в игру</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Останавливаем перезагрузку страницы
+
+        const EmailOrPhoneNumber = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('error-message');
+
+        try {
+            const response = await fetch('/api/Auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ EmailOrPhoneNumber, password })
+            });
+
+            if (response.ok) {
+                window.location.href = '/Home/Index';
+            } else {
+                const data = await response.json();
+                errorDiv.style.display = 'block';
+                errorDiv.innerText = data.message || 'Ошибка авторизации';
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            errorDiv.style.display = 'block';
+            errorDiv.innerText = 'Сервер недоступен';
+        }
+    });
+</script>
