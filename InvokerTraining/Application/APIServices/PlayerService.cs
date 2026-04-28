@@ -30,6 +30,7 @@ namespace InvokerTraining.Application.APIServices
                 throw new Exception("Fail to Login");
             }
             var token = _jwtProvider.GenerateToken(player);
+
             return token;
 
         }

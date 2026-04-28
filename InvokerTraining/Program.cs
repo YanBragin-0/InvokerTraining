@@ -4,8 +4,10 @@ using InvokerTraining.Application.GameServices;
 using InvokerTraining.Infrastructure;
 using InvokerTraining.Infrastructure.Extentions;
 using InvokerTraining.Infrastructure.JWT;
+using InvokerTraining.Infrastructure.Redis;
 using InvokerTraining.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace InvokerTraining
 {
@@ -15,7 +17,12 @@ namespace InvokerTraining
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddSingleton<IConnectionMultiplexer>(r =>
+            {
+                var rc = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(rc!);
+            });
+
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddSignalR();
@@ -28,6 +35,7 @@ namespace InvokerTraining
             builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
             builder.Services.AddScoped<IPlayerService, PlayerService>();
             builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
+            builder.Services.AddScoped<ICacher, CacheManager>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
             builder.Services.AddApiAuth(builder.Configuration);
