@@ -8,7 +8,7 @@ namespace InvokerTraining.Infrastructure.Redis
         public async Task<T?> Get<T>(string key)
         {
             var json = await database.StringGetAsync(key);
-            return json.HasValue ? JsonSerializer.Deserialize<T>((ReadOnlySpan<byte>)json) : default;
+            return json.HasValue ? JsonSerializer.Deserialize<T>((ReadOnlySpan<byte>)json) : default(T);
         }
         public async Task RemoveAsync(string key)
                             => await database.KeyDeleteAsync(key);

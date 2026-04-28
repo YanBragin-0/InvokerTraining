@@ -4,6 +4,7 @@ namespace InvokerTraining.Application.Abstractions
 {
     public interface IJwtProvider
     {
-        string GenerateToken(Player player);
+        string GenerateAccessToken(Guid playerId);
+        string GenerateRefreshToken();
     }
 }

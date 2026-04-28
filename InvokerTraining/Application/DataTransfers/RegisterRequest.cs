@@ -9,4 +9,5 @@ namespace InvokerTraining.Application.DataTransfers
     public record LoginRequest(
         [Required] string EmailOrPhoneNumber,
         [Required] string password);
+    public record TokensPair(string accessToken, string refreshToken);
 }

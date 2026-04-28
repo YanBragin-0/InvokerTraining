@@ -15,14 +15,14 @@ namespace InvokerTraining.Infrastructure.JWT
         {
             _jwtOptions = options.Value;
         }
-        public string GenerateToken(Player player)
+        public string GenerateAccessToken(Guid playerId)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            Claim[] claims = [new Claim("userId", player.Id.ToString())];
+            Claim[] claims = [new Claim("userId", playerId.ToString())];
             var token = new JwtSecurityToken(
                     claims: claims,
-                    expires: DateTime.UtcNow.AddHours(_jwtOptions.Expires),
+                    expires: DateTime.UtcNow.AddMinutes(_jwtOptions.Expires),
                     signingCredentials: credentials);
             try
             {
@@ -33,5 +33,7 @@ namespace InvokerTraining.Infrastructure.JWT
                 return ex.ToString(); 
             }
         }
+
+        public string GenerateRefreshToken() => Guid.NewGuid().ToString();
     }
 }

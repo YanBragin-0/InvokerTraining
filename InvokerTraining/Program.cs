@@ -6,6 +6,7 @@ using InvokerTraining.Infrastructure.Extentions;
 using InvokerTraining.Infrastructure.JWT;
 using InvokerTraining.Infrastructure.Redis;
 using InvokerTraining.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -41,13 +42,16 @@ namespace InvokerTraining
             builder.Services.AddApiAuth(builder.Configuration);
             builder.Services.ConfigureApplicationCookie(options => 
             { 
-
                 options.LoginPath = "/Account/Login";
             });
+            //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //    .AddCookie(options => {
+            //        options.LoginPath = "/Auth/login"; 
+            //});
             var DbConnectionString = builder.Configuration.GetConnectionString("Postgres");
             builder.Services.AddDbContext<AppDbContext>(op => op.UseNpgsql(DbConnectionString));
             var app = builder.Build();
-
+            app.UseRouting();
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -55,10 +59,10 @@ namespace InvokerTraining
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            app.UseTokenRefresh();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseRouting();
+            
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapStaticAssets();
