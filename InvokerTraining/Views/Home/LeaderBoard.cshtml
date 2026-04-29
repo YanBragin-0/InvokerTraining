@@ -1,0 +1,35 @@
+@model List<(string PhoneOrEmail, int GameCount, TimeSpan? PlayerRecord)>
+
+@{
+    ViewData["Title"] = "LeaderBoard";
+}
+
+<div class="page-container">
+    <h1>@ViewData["Title"]</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Games Played</th>
+                <th>Best Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rank = 1;
+            }
+            @foreach (var player in Model)
+            {
+                <tr>
+                    <td>@rank</td>
+                    <td>@player.PhoneOrEmail</td>
+                    <td>@player.GameCount</td>
+                    <td>@(player.PlayerRecord.HasValue ? $"{player.PlayerRecord.Value.TotalSeconds:F2}s" : "—")</td>
+                </tr>
+                rank++;
+            }
+        </tbody>
+    </table>
+</div>

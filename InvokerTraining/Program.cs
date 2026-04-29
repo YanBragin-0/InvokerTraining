@@ -37,6 +37,7 @@ namespace InvokerTraining
             builder.Services.AddScoped<IPlayerService, PlayerService>();
             builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
             builder.Services.AddScoped<ICacher, CacheManager>();
+            builder.Services.AddScoped<IInfoService, InfoService>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
             builder.Services.AddApiAuth(builder.Configuration);

@@ -19,6 +19,9 @@ namespace InvokerTraining.Infrastructure.Repositories
             return user;
         }
 
+        public IAsyncEnumerable<Player> GetLeadersAsync() 
+                => _context.Players.OrderBy(p => p.Record).AsAsyncEnumerable().Take(20);
+
         public async Task<Player?> GetPlayerByPhoneOrEmailAsync(string phoneOrEmail)
         {
             var player = await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PhoneOrEmail == phoneOrEmail);
@@ -33,5 +36,6 @@ namespace InvokerTraining.Infrastructure.Repositories
         }
 
         public async Task SavechangesAsync() => await _context.SaveChangesAsync();
+
     }
 }

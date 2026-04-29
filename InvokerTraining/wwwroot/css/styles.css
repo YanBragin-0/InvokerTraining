@@ -1,6 +1,6 @@
 ﻿
 body {
-    background-color: #0b0b0b; /* Глубокий черный */
+    background-color: #0b0b0b; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -109,4 +109,69 @@ body {
     border-radius: 6px;
     margin-bottom: 1rem;
     font-size: 0.9rem;
+}
+
+/* Privacy and LeaderBoard Styles */
+.page-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.page-container h1 {
+    color: #00d4ff;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.page-container p {
+    color: #b0b0b0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.table {
+    background: linear-gradient(145deg, #161616, #1a1a1a);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid #2a2a2a;
+}
+
+.table thead {
+    background: #0088ff;
+}
+
+.table thead th {
+    color: deepskyblue;
+    font-weight: 700;
+    padding: 1rem;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #2a2a2a;
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.table tbody td {
+    color: black;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
 }

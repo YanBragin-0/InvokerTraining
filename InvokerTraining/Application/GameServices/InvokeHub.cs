@@ -11,8 +11,6 @@ namespace InvokerTraining.Application.GameServices
         private List<string> Combination = new();
         private readonly Stopwatch _Timer = new();
         private int SpellSCounter = 0;
-
-  
         public async Task SendKey(string key,string target)
         {
             if (key.ToLower() == "r")
@@ -69,6 +67,7 @@ namespace InvokerTraining.Application.GameServices
                 var currentPlayer = await _playerRepository.GetByIdAsync((Guid)guid);
                 if (currentPlayer != null)
                 {
+                    currentPlayer.GameCount++;
                     if(currentPlayer.Record == null)
                     {
                         currentPlayer.Record = TimeSpan.FromSeconds(time);
