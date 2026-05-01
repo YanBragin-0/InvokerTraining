@@ -9,6 +9,8 @@ using InvokerTraining.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using Serilog.Sinks.Seq;
+using Serilog;
 
 namespace InvokerTraining
 {
@@ -18,12 +20,20 @@ namespace InvokerTraining
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var seq = builder.Configuration.GetConnectionString("Seq")!;
+            builder.Host.UseSerilog((context, configuration) => configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .Enrich.FromLogContext()
+                    .WriteTo.Seq(seq)
+                    .WriteTo.Console()
+            );
+            Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
+            Log.Fatal("!!!!! ТЕСТОВЫЙ ЛОГ ДЛЯ SEQ !!!!!");
             builder.Services.AddSingleton<IConnectionMultiplexer>(r =>
             {
                 var rc = builder.Configuration.GetConnectionString("Redis");
                 return ConnectionMultiplexer.Connect(rc!);
             });
-
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddSignalR();
@@ -45,10 +55,7 @@ namespace InvokerTraining
             { 
                 options.LoginPath = "/Account/Login";
             });
-            //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //    .AddCookie(options => {
-            //        options.LoginPath = "/Auth/login"; 
-            //});
+                          
             var DbConnectionString = builder.Configuration.GetConnectionString("Postgres");
             builder.Services.AddDbContext<AppDbContext>(op => op.UseNpgsql(DbConnectionString));
             var app = builder.Build();
