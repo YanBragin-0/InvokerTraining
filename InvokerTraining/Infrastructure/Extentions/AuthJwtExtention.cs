@@ -51,7 +51,7 @@ namespace InvokerTraining.Infrastructure.Extentions
                         var service = scope.ServiceProvider.GetRequiredService<IPlayerService>();
                         var options = scope.ServiceProvider.GetRequiredService<IOptions<JwtOptions>>();
                         var result = await service.TryRefresh(refresh!);
-                        if(result != null)
+                        if(result.IsSuccess)
                         {
                             var cookieOptions = new CookieOptions
                             {
@@ -60,11 +60,11 @@ namespace InvokerTraining.Infrastructure.Extentions
                                 SameSite = SameSiteMode.Lax,
                                 Path = "/"
                             };
-                            context.Response.Cookies.Append("aTo", result.accessToken, new CookieOptions(cookieOptions)
+                            context.Response.Cookies.Append("aTo", result.Value!.accessToken, new CookieOptions(cookieOptions)
                             {
                                 Expires = DateTime.UtcNow.AddMinutes(options.Value.Expires)
                             });
-                            context.Response.Cookies.Append("rTo", result.refreshToken, new CookieOptions
+                            context.Response.Cookies.Append("rTo", result.Value.refreshToken, new CookieOptions
                             {
                                 Expires = DateTime.UtcNow.AddMinutes(2)//test!!!!
                             });

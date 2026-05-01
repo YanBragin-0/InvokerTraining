@@ -37,14 +37,22 @@ namespace InvokerTraining.Controllers
         {
             await _PlayerService.Register(registerationRequest);
             var tokensPair = await _PlayerService.Login(new LoginRequest(registerationRequest.EmailOrPhoneNumber,registerationRequest.password));
-            AppDefaultCookieOptions(tokensPair);
+            if (!tokensPair.IsSuccess)
+            {
+                return BadRequest(tokensPair.Message);
+            }
+            AppDefaultCookieOptions(tokensPair.Value!);
             return Ok();
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest LoginRequest)
         {
             var tokensPair = await _PlayerService.Login(LoginRequest);
-            AppDefaultCookieOptions(tokensPair);
+            if (!tokensPair.IsSuccess)
+            {
+                return BadRequest(tokensPair.Message);
+            }
+            AppDefaultCookieOptions(tokensPair.Value!);
             return Ok();
         }
         [Route("refresh")]
@@ -58,7 +66,7 @@ namespace InvokerTraining.Controllers
             var result = await _PlayerService.TryRefresh(oldToken);
             if(result != null)
             {
-                AppDefaultCookieOptions(result);
+                AppDefaultCookieOptions(result.Value!);
                 return Ok();
             }
             return Unauthorized();
