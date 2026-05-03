@@ -78,7 +78,6 @@ namespace InvokerTraining.Application.GameServices
                     }
                     var session = new GameSession(currentPlayer.Id, TimeSpan.FromSeconds(time));
                     await _sessionRepository.AddAsync(session);
-                    await _playerRepository.SavechangesAsync();
                 }
             }
         }

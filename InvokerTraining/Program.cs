@@ -28,7 +28,6 @@ namespace InvokerTraining
                     .WriteTo.Console()
             );
             Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
-            Log.Fatal("!!!!! ТЕСТОВЫЙ ЛОГ ДЛЯ SEQ !!!!!");
             builder.Services.AddSingleton<IConnectionMultiplexer>(r =>
             {
                 var rc = builder.Configuration.GetConnectionString("Redis");
@@ -55,22 +54,19 @@ namespace InvokerTraining
             { 
                 options.LoginPath = "/Account/Login";
             });
-                          
+            builder.Services.AddExceptionHandler<ExceptionHandler>();        
             var DbConnectionString = builder.Configuration.GetConnectionString("Postgres");
             builder.Services.AddDbContext<AppDbContext>(op => op.UseNpgsql(DbConnectionString));
             var app = builder.Build();
-            app.UseRouting();
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseRouting();
             app.UseTokenRefresh();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapStaticAssets();

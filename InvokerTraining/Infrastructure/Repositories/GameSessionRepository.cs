@@ -9,6 +9,7 @@ namespace InvokerTraining.Infrastructure.Repositories
         public async Task AddAsync(GameSession gameSession)
         {
             await _context.GameSessions.AddAsync(gameSession);
+            await _context.SaveChangesAsync();
         }
     }
 }

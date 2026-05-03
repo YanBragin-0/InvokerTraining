@@ -35,7 +35,6 @@ namespace InvokerTraining.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task SavechangesAsync() => await _context.SaveChangesAsync();
 
     }
 }
