@@ -29,7 +29,7 @@ namespace InvokerTraining.Controllers
                 HttpOnly = true,
                 Secure = false, //!!!!
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(2)//test!!!!
+                Expires = DateTime.UtcNow.AddHours(_Options.Value.Refresh)
             });
         }
         [HttpPost("registration")]
@@ -70,6 +70,19 @@ namespace InvokerTraining.Controllers
                 return Ok();
             }
             return Unauthorized();
+        }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var old = Request.Cookies["rTo"];
+            if (old != null)
+            {
+                await _PlayerService.Logout(old);
+                Response.Cookies.Delete("aTo");
+                Response.Cookies.Delete("rTo");
+                return Ok();
+            }
+            return BadRequest("Logout ERROR");
         }
     }
 }

@@ -3,8 +3,30 @@
 }
 
 <div style="position: absolute; top: 1rem; right: 1rem;">
-    <a href="/account/logout" class="btn btn-danger btn-sm">Logout</a>
+    <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
 </div>
+
+<script>
+    document.getElementById('logoutBtn').addEventListener('click', async function() {
+        try {
+            const response = await fetch('/api/Auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                window.location.href = '/Account/Login';
+            } else {
+                alert('Ошибка при выходе');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Ошибка сервера');
+        }
+    });
+</script>
 
 <div class="text-center">
     <h1 class="display-4" style="font-size: 2.5rem; color: #00d4ff; font-weight: bold";>Invoker Training</h1>

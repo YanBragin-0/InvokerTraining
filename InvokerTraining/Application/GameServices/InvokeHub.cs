@@ -1,10 +1,15 @@
-﻿using InvokerTraining.Application.Abstractions;
+﻿using Contracts;
+using InvokerTraining.Application.Abstractions;
+using InvokerTraining.Application.DataTransfers;
+using InvokerTraining.Infrastructure.Redis;
 using InvokerTraining.Models.Entities;
+using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 namespace InvokerTraining.Application.GameServices
 {
-    public class InvokeHub(InvokeService service,IServiceScopeFactory scopeFactory) : Hub
+    public class InvokeHub(InvokeService service,
+        IServiceScopeFactory scopeFactory) : Hub
     {
         private readonly IServiceScopeFactory _serviceScopeFactory = scopeFactory;
         private readonly InvokeService _Service = service;
@@ -59,25 +64,52 @@ namespace InvokerTraining.Application.GameServices
                 IPlayerRepository _playerRepository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
                 ICurrentUser _currentUser = scope.ServiceProvider.GetRequiredService<ICurrentUser>();
                 IGameSessionRepository _sessionRepository = scope.ServiceProvider.GetRequiredService<IGameSessionRepository>();
+                ICacher cacher = scope.ServiceProvider.GetRequiredService<ICacher>();
+                IPublishEndpoint _publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
                 Guid? guid = _currentUser.CurrentUserID;
                 if (guid == null)
                 {
                     return;
                 }
                 var currentPlayer = await _playerRepository.GetByIdAsync((Guid)guid);
+                bool isNewRecord = false;
+                var currentTime = TimeSpan.FromSeconds(time);
                 if (currentPlayer != null)
                 {
                     currentPlayer.GameCount++;
-                    if(currentPlayer.Record == null)
+                    if(currentPlayer.Record == null || currentTime < currentPlayer.Record)
                     {
-                        currentPlayer.Record = TimeSpan.FromSeconds(time);
+                        isNewRecord = true;
+                        currentPlayer.Record = currentTime;
                     }
-                    else if (currentPlayer.Record > TimeSpan.FromSeconds(time))
+                    var bestRecord = await cacher.Get<TimeSpan?>("best");
+                    if(bestRecord == null)
                     {
-                        currentPlayer.Record = TimeSpan.FromSeconds(time);
+                        bestRecord = _playerRepository.GetBestByRecord();
+                        if (bestRecord == null)
+                        {
+                            bestRecord = currentTime;
+                            isNewRecord = true;
+                        }
+                        await cacher.Set("best",bestRecord,TimeSpan.FromDays(30));
                     }
-                    var session = new GameSession(currentPlayer.Id, TimeSpan.FromSeconds(time));
+                    if (currentTime < bestRecord) 
+                    { 
+                        isNewRecord = true;
+                        await cacher.Set("best", currentTime, TimeSpan.FromDays(30));
+                    }
+                    var session = new GameSession(currentPlayer.Id, currentTime);
                     await _sessionRepository.AddAsync(session);
+                }
+                if (isNewRecord)
+                {
+                    await _publishEndpoint.Publish<RecordSet>(new RecordSet 
+                    { 
+                        PlayerId = currentPlayer!.Id,
+                        AccountName = currentPlayer.PhoneOrEmail,
+                        Time = currentPlayer.Record,
+                        When = DateTime.UtcNow
+                    });
                 }
             }
         }

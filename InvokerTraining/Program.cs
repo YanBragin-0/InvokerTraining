@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Serilog.Sinks.Seq;
 using Serilog;
+using MassTransit;
+using Contracts;
+using Microsoft.Extensions.Options;
 
 namespace InvokerTraining
 {
@@ -19,8 +22,8 @@ namespace InvokerTraining
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             var seq = builder.Configuration.GetConnectionString("Seq")!;
+
             builder.Host.UseSerilog((context, configuration) => configuration
                     .ReadFrom.Configuration(context.Configuration)
                     .Enrich.FromLogContext()
@@ -33,6 +36,7 @@ namespace InvokerTraining
                 var rc = builder.Configuration.GetConnectionString("Redis");
                 return ConnectionMultiplexer.Connect(rc!);
             });
+            builder.Services.AddRabbitMassTransitConfigurations(builder.Configuration,builder);
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
             builder.Services.AddSignalR();
@@ -58,6 +62,23 @@ namespace InvokerTraining
             var DbConnectionString = builder.Configuration.GetConnectionString("Postgres");
             builder.Services.AddDbContext<AppDbContext>(op => op.UseNpgsql(DbConnectionString));
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<AppDbContext>();
+                    if (context.Database.GetPendingMigrations().Any())
+                    {
+                        context.Database.Migrate();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "DB ERROR MIGRATION.");
+                }
+            }
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");

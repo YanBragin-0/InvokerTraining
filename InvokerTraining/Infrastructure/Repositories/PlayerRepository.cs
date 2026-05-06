@@ -13,6 +13,9 @@ namespace InvokerTraining.Infrastructure.Repositories
             _context = context;
         }
 
+        public TimeSpan? GetBestByRecord()
+                    => _context.Players.OrderBy(x => x.Record).First().Record;
+
         public async Task<Player?> GetByIdAsync(Guid Id)
         {
             var user = await _context.Players.FindAsync(Id);

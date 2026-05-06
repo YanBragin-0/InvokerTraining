@@ -1,8 +1,10 @@
 ﻿using InvokerTraining.Application.Abstractions;
 using InvokerTraining.Application.DataTransfers;
+using InvokerTraining.Infrastructure.JWT;
 using InvokerTraining.Infrastructure.Redis;
 using InvokerTraining.Models;
 using InvokerTraining.Models.Entities;
+using Microsoft.Extensions.Options;
 
 namespace InvokerTraining.Application.APIServices
 {
@@ -11,17 +13,20 @@ namespace InvokerTraining.Application.APIServices
         private readonly IHasher _Hasher;
         private readonly IPlayerRepository _playerRepository;
         private readonly ICacher _cacher;
+        private readonly IOptions<JwtOptions> options;
         private readonly IJwtProvider _jwtProvider;
 
         public PlayerService(IJwtProvider jwtProvider,
             IHasher hasher,
             IPlayerRepository playerRepository,
-            ICacher cacher)
+            ICacher cacher,
+            IOptions<JwtOptions> options)
         {
             _jwtProvider = jwtProvider;
             _Hasher = hasher;
             _playerRepository = playerRepository;
             _cacher = cacher;
+            this.options = options;
         }
 
         public async Task<Result<TokensPair>> Login(LoginRequest request)
@@ -38,9 +43,12 @@ namespace InvokerTraining.Application.APIServices
             } 
             var acessToken = _jwtProvider.GenerateAccessToken(player.Id);
             var refreshToken = _jwtProvider.GenerateRefreshToken();
-            await _cacher.Set(refreshToken,player.Id,TimeSpan.FromMinutes(2));//1 minutes Test!!!!!!!!!!!!!
+            await _cacher.Set(refreshToken,player.Id,TimeSpan.FromHours(options.Value.Refresh));
             return Result<TokensPair>.Success(new TokensPair(acessToken,refreshToken));
         }
+
+        public async Task Logout(string token) => await _cacher.RemoveAsync(token);
+
         public async Task<Result<Player>> Register(RegisterationRequest request)
         {
             var player = await _playerRepository.GetPlayerByPhoneOrEmailAsync(request.EmailOrPhoneNumber);
@@ -61,7 +69,7 @@ namespace InvokerTraining.Application.APIServices
                 var newAccessToken = _jwtProvider.GenerateAccessToken(playerId);
                 await _cacher.RemoveAsync(refresh);
                 var newRefreshToken = _jwtProvider.GenerateRefreshToken();
-                await _cacher.Set(newRefreshToken, playerId, TimeSpan.FromMinutes(2));//1 minutes Test!!!!!!!!!!!!!
+                await _cacher.Set(newRefreshToken, playerId, TimeSpan.FromHours(options.Value.Refresh));
                 return Result<TokensPair?>.Success(new TokensPair(newAccessToken,newRefreshToken));
             }
             return Result<TokensPair?>.Error("Error Refreshing tokens");

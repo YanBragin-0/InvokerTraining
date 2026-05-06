@@ -9,5 +9,6 @@ namespace InvokerTraining.Application.Abstractions
         Task<Result<Player>> Register(RegisterationRequest request);
         Task<Result<TokensPair>> Login(LoginRequest request);
         Task<Result<TokensPair?>> TryRefresh(string refresh);
+        Task Logout(string token);
     }
 }

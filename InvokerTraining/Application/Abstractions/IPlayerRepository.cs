@@ -8,5 +8,6 @@ namespace InvokerTraining.Application.Abstractions
         Task<Player?> GetPlayerByPhoneOrEmailAsync(string phoneOrEmail);
         Task<Player?> GetByIdAsync(Guid Id);
         Task RegistrationAsync(Player newPlayer);
+        TimeSpan? GetBestByRecord(); 
     }
 }

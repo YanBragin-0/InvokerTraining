@@ -1,0 +1,82 @@
+services:
+  invokertraining:
+    image: invoker-training:latest
+    build:
+      context: .
+      dockerfile: InvokerTraining/Dockerfile
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./InvokerTraining/appsettings.Docker.json:/app/appsettings.json:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Docker
+  telegram-consumer:
+    image: telegram-consumer
+    build:
+      context: .
+      dockerfile: TelegramConsumer/Dockerfile
+    volumes:
+      - ./TelegramConsumer/appsettings.Docker.json:/app/appsettings.json
+    depends_on:
+      - rabbitmq
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - "5341:80"        
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    volumes:
+      - seq_data:/data
+  rabbitmq:
+    image: rabbitmq:3-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RabbitMqOptions__Host=rabbitmq
+  redis:
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s     
+      timeout: 3s     
+      retries: 5       
+      start_period: 5s
+    ports:
+      - "6379:6379"
+    
+
+  postgres:
+    image: postgres:17-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d GameTraining"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=GameTraining
+      - POSTGRES_PASSWORD=123
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  seq_data:

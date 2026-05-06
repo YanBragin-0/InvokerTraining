@@ -1,3 +1,8 @@
 <Solution>
+  <Project Path="Contracts/Contracts.csproj" Id="9003036b-c70c-4c03-9f0f-1930a2c5cbd1" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
   <Project Path="InvokerTraining/InvokerTraining.csproj" />
+  <Project Path="TelegramConsumer/TelegramConsumer.csproj" Id="a072a518-fa7e-4afd-8632-1e8c613c9e7a" />
 </Solution>
